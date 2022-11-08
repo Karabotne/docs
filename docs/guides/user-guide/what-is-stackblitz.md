@@ -1,75 +1,527 @@
----
-title: What is StackBlitz?
-description: StackBlitz is an instant fullstack web IDE for the JavaScript ecosystem. It's powered by WebContainers, the first WebAssembly-based operating system which boots Node.js environment in milliseconds, securely within your browser tab.
----
 
-# {{ $frontmatter.title }}
+Code
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
-StackBlitz is an **instant fullstack web IDE** for the JavaScript ecosystem. It's powered by [WebContainers](https://blog.stackblitz.com/posts/introducing-webcontainers/), the first WebAssembly-based operating system which **boots Node.js environment in milliseconds**, securely within your browser tab.
+<HTML>
 
-Now you can use the web to build the web.
+ <HEAD>
 
-## Why should I use StackBlitz?
+  <TITLE> New Document </TITLE>
 
-StackBlitz is secure, shareable, and satisfying.
+  <META NAME="Generator" CONTENT="EditPlus">
 
-There is no greater buzzkill than having to fiddle with the deployment and build tools config before you can start coding. **StackBlitz takes care of all of the setup**: from forking and installing dependencies to configuring build tools and hot reloading. Working on StackBlitz feels exactly like working on your local dev environment - minus the frustrating parts.
+  <META NAME="Author" CONTENT="">
 
-### Key features:
+  <META NAME="Keywords" CONTENT="">
 
-- **unmatched security**: all development is happening in your browser tab, including running Node.js and git
-- **surprisingly fast**: the entire dev environment spins up in miliseconds - even reinstalling `node_modules` is as simple as refreshing the page
-- **works online and offline**: continue your work even when you lose the Internet connection midway
-- **your apps are always online**: your apps never go to sleep and have no bandwidth limits - share the URL with as many friends, colleagues, and communities as you’d like!
-- **seamless debugging** with Chrome Dev Tools for both front- and backend apps!
+  <META NAME="Description" CONTENT="">
 
-![Preview & debug](./assets/what-is-sb-intro.gif)
+  <style>
 
-## What is StackBlitz used for?
+  html, body {
 
-### Delightful docs
+  height: 100%;
 
-Add interactive examples [from a GitHub repository](/guides/integration/open-from-github) or [hook up an existing StackBlitz project](/guides/integration/create-with-sdk) to your docs, blog, or website. Help your users fall in love with your project right from the first try.
+  padding: 0;
 
-### Interactive playgrounds
+  margin: 0;
 
-Create a [project starter](/guides/user-guide/starter-projects) or boilerplate code and let your users taste the full power of your project. Wanna take this a step further? Keep it on a [custom domain](https://stackblitz.new) so your users can access it even more easily.
+  background: #000;
 
-### Quick demos
+}
 
-Working on a blog post or a conference talk? [Create a StackBlitz project that you can quickly share](/guides/integration/embedding). You can change the project title and the slug to make it effortless for others to reach it. And yes, it works with Medium or DEV.
+canvas {
 
-### Entire programming workflow
+  position: absolute;
 
-One click and our Codeflow IDE spins up a whole code editor with git integration and hot-reloading preview. Now all you need for your dev work is just a browser.
+  width: 100%;
 
-### Straightforward docs editing
+  height: 100%;
 
-Every project deserves collaborative documentation. Typo fixes have never been easier - click, see what you edit as you edit, and submit a PR when you’re satisfied. All in the browser, thanks to Web Publisher.
+}
 
-### Effective bug reproductions
+  </style>
 
-Plain bug descriptions are so 2010s. Welcome to the new era of bug hunting where every report comes with its [own StackBlitz reproduction](/guides/integration/bug-reproductions) so you can instantly filter out true issues from everything else. Never spin up heavy local installations for a simple bug report ever again.
+ </HEAD>
 
-### Build whole educational experiences
 
-You like the idea of running Node.js in the browser and feel inspired to build your own editor? No worries. Our [WebContainers API](/platform/api/webcontainer-api) allows you to use our technology to power your own playgrounds.
+ <BODY>
 
-### Rapid prototyping
+  <canvas id="pinkboard"></canvas>
 
-Speed up your entire development process with **realtime hot-reloading in the fastest dev environment ever made**. Collaborate remotely on different devices, send and receive instant feedback, and **get to market faster**.
+  <script>
 
-## What about other online IDEs?
+  /*
 
-Unlike StackBlitz, legacy online IDEs run on remote servers and stream the results back to your browser. This approach yields **few security benefits** and **provides a worse experience** than your local machine in nearly every way.
+ * Settings
 
-**StackBlitz solves these problems by doing all compute inside your browser**. This leverages decades of speed and security innovations and also **unlocks key development and debugging benefits**.
+ */
 
-## Get involved
+var settings = {
 
-We love our community! Please do stay in touch and:
+  particles: {
 
-- Join our supportive community on [the Discord server](https://discord.gg/22zTzrwQrU)!
-- Read our [blog](https://blog.stackblitz.com/) and see what we have been up to in our [monthly update posts](https://blog.stackblitz.com/categories/monthly-updates/)!
-- Share your StackBlitz projects on [Twitter](https://twitter.com/stackblitz)!
-- Reach out to our Developer Advocate on [Twitter](https://twitter.com/sylwiavargas) or via [an email](mailto:devrel@stackblitz.com) with your StackBlitz ideas, dreams, and wishes!
+    length:   500, // maximum amount of particles
+
+    duration:   2, // particle duration in sec
+
+    velocity: 100, // particle velocity in pixels/sec
+
+    effect: -0.75, // play with this for a nice effect
+
+    size:      30, // particle size in pixels
+
+  },
+
+};
+
+
+/*
+
+ * RequestAnimationFrame polyfill by Erik Möller
+
+ */
+
+(function(){var b=0;var c=["ms","moz","webkit","o"];for(var a=0;a<c.length&&!window.requestAnimationFrame;++a){window.requestAnimationFrame=window[c[a]+"RequestAnimationFrame"];window.cancelAnimationFrame=window[c[a]+"CancelAnimationFrame"]||window[c[a]+"CancelRequestAnimationFrame"]}if(!window.requestAnimationFrame){window.requestAnimationFrame=function(h,e){var d=new Date().getTime();var f=Math.max(0,16-(d-b));var g=window.setTimeout(function(){h(d+f)},f);b=d+f;return g}}if(!window.cancelAnimationFrame){window.cancelAnimationFrame=function(d){clearTimeout(d)}}}());
+
+
+/*
+
+ * Point class
+
+ */
+
+var Point = (function() {
+
+  function Point(x, y) {
+
+    this.x = (typeof x !== 'undefined') ? x : 0;
+
+    this.y = (typeof y !== 'undefined') ? y : 0;
+
+  }
+
+  Point.prototype.clone = function() {
+
+    return new Point(this.x, this.y);
+
+  };
+
+  Point.prototype.length = function(length) {
+
+    if (typeof length == 'undefined')
+
+      return Math.sqrt(this.x * this.x + this.y * this.y);
+
+    this.normalize();
+
+    this.x *= length;
+
+    this.y *= length;
+
+    return this;
+
+  };
+
+  Point.prototype.normalize = function() {
+
+    var length = this.length();
+
+    this.x /= length;
+
+    this.y /= length;
+
+    return this;
+
+  };
+
+  return Point;
+
+})();
+
+
+/*
+
+ * Particle class
+
+ */
+
+var Particle = (function() {
+
+  function Particle() {
+
+    this.position = new Point();
+
+    this.velocity = new Point();
+
+    this.acceleration = new Point();
+
+    this.age = 0;
+
+  }
+
+  Particle.prototype.initialize = function(x, y, dx, dy) {
+
+    this.position.x = x;
+
+    this.position.y = y;
+
+    this.velocity.x = dx;
+
+    this.velocity.y = dy;
+
+    this.acceleration.x = dx * settings.particles.effect;
+
+    this.acceleration.y = dy * settings.particles.effect;
+
+    this.age = 0;
+
+  };
+
+  Particle.prototype.update = function(deltaTime) {
+
+    this.position.x += this.velocity.x * deltaTime;
+
+    this.position.y += this.velocity.y * deltaTime;
+
+    this.velocity.x += this.acceleration.x * deltaTime;
+
+    this.velocity.y += this.acceleration.y * deltaTime;
+
+    this.age += deltaTime;
+
+  };
+
+  Particle.prototype.draw = function(context, image) {
+
+    function ease(t) {
+
+      return (--t) * t * t + 1;
+
+    }
+
+    var size = image.width * ease(this.age / settings.particles.duration);
+
+    context.globalAlpha = 1 - this.age / settings.particles.duration;
+
+    context.drawImage(image, this.position.x - size / 2, this.position.y - size / 2, size, size);
+
+  };
+
+  return Particle;
+
+})();
+
+
+/*
+
+ * ParticlePool class
+
+ */
+
+var ParticlePool = (function() {
+
+  var particles,
+
+      firstActive = 0,
+
+      firstFree   = 0,
+
+      duration    = settings.particles.duration;
+
+ 
+
+  function ParticlePool(length) {
+
+    // create and populate particle pool
+
+    particles = new Array(length);
+
+    for (var i = 0; i < particles.length; i++)
+
+      particles[i] = new Particle();
+
+  }
+
+  ParticlePool.prototype.add = function(x, y, dx, dy) {
+
+    particles[firstFree].initialize(x, y, dx, dy);
+
+   
+
+    // handle circular queue
+
+    firstFree++;
+
+    if (firstFree   == particles.length) firstFree   = 0;
+
+    if (firstActive == firstFree       ) firstActive++;
+
+    if (firstActive == particles.length) firstActive = 0;
+
+  };
+
+  ParticlePool.prototype.update = function(deltaTime) {
+
+    var i;
+
+   
+
+    // update active particles
+
+    if (firstActive < firstFree) {
+
+      for (i = firstActive; i < firstFree; i++)
+
+        particles[i].update(deltaTime);
+
+    }
+
+    if (firstFree < firstActive) {
+
+      for (i = firstActive; i < particles.length; i++)
+
+        particles[i].update(deltaTime);
+
+      for (i = 0; i < firstFree; i++)
+
+        particles[i].update(deltaTime);
+
+    }
+
+   
+
+    // remove inactive particles
+
+    while (particles[firstActive].age >= duration && firstActive != firstFree) {
+
+      firstActive++;
+
+      if (firstActive == particles.length) firstActive = 0;
+
+    }
+
+   
+
+   
+
+  };
+
+  ParticlePool.prototype.draw = function(context, image) {
+
+    // draw active particles
+
+    if (firstActive < firstFree) {
+
+      for (i = firstActive; i < firstFree; i++)
+
+        particles[i].draw(context, image);
+
+    }
+
+    if (firstFree < firstActive) {
+
+      for (i = firstActive; i < particles.length; i++)
+
+        particles[i].draw(context, image);
+
+      for (i = 0; i < firstFree; i++)
+
+        particles[i].draw(context, image);
+
+    }
+
+  };
+
+  return ParticlePool;
+
+})();
+
+
+/*
+
+ * Putting it all together
+
+ */
+
+(function(canvas) {
+
+  var context = canvas.getContext('2d'),
+
+      particles = new ParticlePool(settings.particles.length),
+
+      particleRate = settings.particles.length / settings.particles.duration, // particles/sec
+
+      time;
+
+ 
+
+  // get point on heart with -PI <= t <= PI
+
+  function pointOnHeart(t) {
+
+    return new Point(
+
+      160 * Math.pow(Math.sin(t), 3),
+
+      130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+
+    );
+
+  }
+
+ 
+
+  // creating the particle image using a dummy canvas
+
+  var image = (function() {
+
+    var canvas  = document.createElement('canvas'),
+
+        context = canvas.getContext('2d');
+
+    canvas.width  = settings.particles.size;
+
+    canvas.height = settings.particles.size;
+
+    // helper function to create the path
+
+    function to(t) {
+
+      var point = pointOnHeart(t);
+
+      point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
+
+      point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
+
+      return point;
+
+    }
+
+    // create the path
+
+    context.beginPath();
+
+    var t = -Math.PI;
+
+    var point = to(t);
+
+    context.moveTo(point.x, point.y);
+
+    while (t < Math.PI) {
+
+      t += 0.01; // baby steps!
+
+      point = to(t);
+
+      context.lineTo(point.x, point.y);
+
+    }
+
+    context.closePath();
+
+    // create the fill
+
+    context.fillStyle = '#ea80b0';
+
+    context.fill();
+
+    // create the image
+
+    var image = new Image();
+
+    image.src = canvas.toDataURL();
+
+    return image;
+
+  })();
+
+ 
+
+  // render that thing!
+
+  function render() {
+
+    // next animation frame
+
+    requestAnimationFrame(render);
+
+   
+
+    // update time
+
+    var newTime   = new Date().getTime() / 1000,
+
+        deltaTime = newTime - (time || newTime);
+
+    time = newTime;
+
+   
+
+    // clear canvas
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+   
+
+    // create new particles
+
+    var amount = particleRate * deltaTime;
+
+    for (var i = 0; i < amount; i++) {
+
+      var pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+
+      var dir = pos.clone().length(settings.particles.velocity);
+
+      particles.add(canvas.width / 2 + pos.x, canvas.height / 2 - pos.y, dir.x, -dir.y);
+
+    }
+
+   
+
+    // update and draw particles
+
+    particles.update(deltaTime);
+
+    particles.draw(context, image);
+
+  }
+
+ 
+
+  // handle (re-)sizing of the canvas
+
+  function onResize() {
+
+    canvas.width  = canvas.clientWidth;
+
+    canvas.height = canvas.clientHeight;
+
+  }
+
+  window.onresize = onResize;
+
+ 
+
+  // delay rendering bootstrap
+
+  setTimeout(function() {
+
+    onResize();
+
+    render();
+
+  }, 10);
+
+})(document.getElementById('pinkboard'));
+
+  </script>
+
+ </BODY>
+
+</HTML>
+
+
+
+
